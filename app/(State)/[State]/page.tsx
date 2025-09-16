@@ -559,6 +559,7 @@ export default async function SubdomainPage({ params }: SubdomainPageProps) {
                 ques={`Neighborhoods we serve in  ${ContentData?.name}`}
                 ans={ContentData?.neighbourhoods?.split("|")}
                 slug={ContentData?.slug}
+                neighborhood={true}
               />
             </div>
             <div className="mt-28 hidden items-center justify-start md:mx-40 md:block ">
