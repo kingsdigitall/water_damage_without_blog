@@ -65,30 +65,41 @@ function downloadImage(url, filePath) {
 }
 
 // Function to recursively process object and replace URLs with filenames
-function processObject(obj, folderName, folderPath, localPaths) {
+function processObject(obj, folderName, folderPath, localPaths, urlToFilenameMap) {
   if (typeof obj !== 'object' || obj === null) {
     return obj;
   }
   
   if (Array.isArray(obj)) {
-    return obj.map(item => processObject(item, folderName, folderPath, localPaths));
+    return obj.map(item => processObject(item, folderName, folderPath, localPaths, urlToFilenameMap));
   }
   
   const result = {};
   
   for (const [key, value] of Object.entries(obj)) {
     if (typeof value === 'string' && value.includes('imagekit.io')) {
-      // Extract filename from URL
-      const filename = extractFilename(value);
-      if (filename) {
-        const localPath = path.join(folderPath, filename);
-        localPaths.push({ url: value, localPath, filename });
-        result[key] = filename;
+      // Check if we've already processed this URL
+      if (urlToFilenameMap.has(value)) {
+        // Use the existing filename for this URL
+        result[key] = urlToFilenameMap.get(value);
       } else {
-        result[key] = value; // Keep original if extraction fails
+        // Extract filename from URL
+        const filename = extractFilename(value);
+        if (filename) {
+          const localPath = path.join(folderPath, filename);
+          // Only add to download queue if not already added
+          if (!localPaths.some(item => item.url === value)) {
+            localPaths.push({ url: value, localPath, filename });
+          }
+          // Map URL to filename for future reference
+          urlToFilenameMap.set(value, filename);
+          result[key] = filename;
+        } else {
+          result[key] = value; // Keep original if extraction fails
+        }
       }
     } else if (typeof value === 'object' && value !== null) {
-      result[key] = processObject(value, folderName, folderPath, localPaths);
+      result[key] = processObject(value, folderName, folderPath, localPaths, urlToFilenameMap);
     } else {
       result[key] = value;
     }
@@ -109,9 +120,16 @@ async function downloadAllImages() {
     const imagekitData = JSON.parse(fs.readFileSync(imagekitUrlsPath, 'utf8'));
     const localPathsData = {};
     
+    // Map to track unique URLs across all files (URL -> filename)
+    const urlToFilenameMap = new Map();
+    // Map to track URL -> array of all file paths where this URL should be placed
+    const urlToAllPathsMap = new Map();
+    // Set to track which URLs have already been downloaded
+    const downloadedUrls = new Set();
+    
     console.log('📥 Starting image download process...\n');
     
-    // Process each file (about, home, etc.)
+    // First pass: Process all files and collect unique URLs with all their target paths
     for (const [fileName, fileData] of Object.entries(imagekitData)) {
       console.log(`Processing ${fileName}...`);
       
@@ -129,26 +147,93 @@ async function downloadAllImages() {
       console.log(`  Created folder: ${folderPath}`);
       
       // Process the data structure and collect all image URLs
-      const processedData = processObject(fileData, fileName, folderPath, localPaths);
+      const processedData = processObject(fileData, fileName, folderPath, localPaths, urlToFilenameMap);
       localPathsData[fileName] = processedData;
       
-      // Download all images
-      console.log(`  Downloading ${localPaths.length} images...`);
-      let successCount = 0;
-      let failCount = 0;
-      
-      for (const { url, localPath, filename } of localPaths) {
-        try {
-          await downloadImage(url, localPath);
-          successCount++;
-          console.log(`    ✓ Downloaded: ${filename}`);
-        } catch (error) {
-          failCount++;
-          console.error(`    ✗ Failed to download ${filename}: ${error.message}`);
+      // Track all paths for each URL (same URL might appear in multiple folders)
+      for (const { url, localPath } of localPaths) {
+        if (!urlToAllPathsMap.has(url)) {
+          urlToAllPathsMap.set(url, []);
+        }
+        // Only add unique paths
+        if (!urlToAllPathsMap.get(url).includes(localPath)) {
+          urlToAllPathsMap.get(url).push(localPath);
         }
       }
+    }
+    
+    // Second pass: Download each unique URL only once, then copy to all needed locations
+    const uniqueUrls = Array.from(urlToAllPathsMap.keys());
+    console.log(`\n📥 Downloading ${uniqueUrls.length} unique images (duplicates will be copied)...\n`);
+    
+    let successCount = 0;
+    let failCount = 0;
+    let copiedCount = 0;
+    
+    for (const url of uniqueUrls) {
+      const allPaths = urlToAllPathsMap.get(url);
+      const primaryPath = allPaths[0]; // First path is where we'll download
+      const filename = path.basename(primaryPath);
       
-      console.log(`  ✅ ${fileName}: ${successCount} successful, ${failCount} failed\n`);
+      // Check if already downloaded
+      if (downloadedUrls.has(url)) {
+        // URL already processed, just copy to remaining paths
+        for (let i = 1; i < allPaths.length; i++) {
+          const targetPath = allPaths[i];
+          if (fs.existsSync(primaryPath) && !fs.existsSync(targetPath)) {
+            const targetDir = path.dirname(targetPath);
+            if (!fs.existsSync(targetDir)) {
+              fs.mkdirSync(targetDir, { recursive: true });
+            }
+            fs.copyFileSync(primaryPath, targetPath);
+            copiedCount++;
+            console.log(`    📋 Copied: ${filename} to ${path.basename(path.dirname(targetPath))}/`);
+          }
+        }
+        continue;
+      }
+      
+      // Check if primary file already exists
+      if (fs.existsSync(primaryPath)) {
+        downloadedUrls.add(url);
+        // Copy to other paths if needed
+        for (let i = 1; i < allPaths.length; i++) {
+          const targetPath = allPaths[i];
+          if (!fs.existsSync(targetPath)) {
+            const targetDir = path.dirname(targetPath);
+            if (!fs.existsSync(targetDir)) {
+              fs.mkdirSync(targetDir, { recursive: true });
+            }
+            fs.copyFileSync(primaryPath, targetPath);
+            copiedCount++;
+            console.log(`    📋 Copied: ${filename} to ${path.basename(path.dirname(targetPath))}/`);
+          }
+        }
+        continue;
+      }
+      
+      // Download the image
+      try {
+        await downloadImage(url, primaryPath);
+        downloadedUrls.add(url);
+        successCount++;
+        console.log(`    ✓ Downloaded: ${filename}`);
+        
+        // Copy to other paths if the same URL appears in multiple folders
+        for (let i = 1; i < allPaths.length; i++) {
+          const targetPath = allPaths[i];
+          const targetDir = path.dirname(targetPath);
+          if (!fs.existsSync(targetDir)) {
+            fs.mkdirSync(targetDir, { recursive: true });
+          }
+          fs.copyFileSync(primaryPath, targetPath);
+          copiedCount++;
+          console.log(`    📋 Copied: ${filename} to ${path.basename(targetDir)}/`);
+        }
+      } catch (error) {
+        failCount++;
+        console.error(`    ✗ Failed to download ${filename}: ${error.message}`);
+      }
     }
     
     // Write local paths JSON file
@@ -156,6 +241,9 @@ async function downloadAllImages() {
     fs.writeFileSync(localPathsPath, JSON.stringify(localPathsData, null, 2), 'utf8');
     
     console.log(`\n✅ All downloads complete!`);
+    console.log(`   ✓ Successfully downloaded: ${successCount}`);
+    console.log(`   📋 Copied (duplicates): ${copiedCount}`);
+    console.log(`   ✗ Failed: ${failCount}`);
     console.log(`📄 Local paths saved to: ${localPathsPath}`);
     
   } catch (error) {
