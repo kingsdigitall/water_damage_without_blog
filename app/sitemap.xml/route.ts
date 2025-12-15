@@ -124,7 +124,7 @@ export async function GET() {
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>${origin}/service</loc>
+    <loc>${origin}/services</loc>
     <lastmod>${now}</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>

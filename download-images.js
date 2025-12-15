@@ -7,6 +7,38 @@ const http = require('http');
 const imagekitUrlsPath = path.join(__dirname, 'imagekit-urls.json');
 const publicDir = path.join(__dirname, 'public');
 
+// Function to sanitize filename - remove special characters
+function sanitizeFilename(filename) {
+  if (!filename) return filename;
+  
+  // Split filename and extension
+  const lastDotIndex = filename.lastIndexOf('.');
+  let name = filename;
+  let extension = '';
+  
+  if (lastDotIndex > 0) {
+    name = filename.substring(0, lastDotIndex);
+    extension = filename.substring(lastDotIndex);
+  }
+  
+  // Replace special characters with underscore or remove them
+  // Keep only alphanumeric characters, hyphens, and underscores
+  name = name.replace(/[^a-zA-Z0-9_-]/g, '_');
+  
+  // Remove multiple consecutive underscores
+  name = name.replace(/_+/g, '_');
+  
+  // Remove leading/trailing underscores
+  name = name.replace(/^_+|_+$/g, '');
+  
+  // If name is empty after sanitization, use a default name
+  if (!name) {
+    name = 'image_' + Date.now();
+  }
+  
+  return name + extension;
+}
+
 // Function to extract filename from URL
 function extractFilename(url) {
   try {
@@ -23,6 +55,9 @@ function extractFilename(url) {
     if (timestampPattern.test(filename)) {
       filename = filename.replace(timestampPattern, '');
     }
+    
+    // Sanitize the filename to remove special characters
+    filename = sanitizeFilename(filename);
     
     return filename;
   } catch (error) {
@@ -257,5 +292,5 @@ if (require.main === module) {
   downloadAllImages();
 }
 
-module.exports = { downloadAllImages, extractFilename, downloadImage };
+module.exports = { downloadAllImages, extractFilename, downloadImage, sanitizeFilename };
 

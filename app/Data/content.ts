@@ -558,11 +558,11 @@ const contactContent: any = {
   ),
   zipCode: getValueOrDefault(contactDataJson?.zipCode, "DEFAULT: 12345"),
   bannerImage: getValueOrDefault(
-    `/ContactInfo/${localImages.ContactInfo.bannerImage}`,
+    localImages?.ContactInfo?.bannerImage ? `/ContactInfo/${localImages.ContactInfo.bannerImage}` : undefined,
     "https://ik.imagekit.io/h7rza8886p/Default1.jpg?updatedAt=1757319001930",
   ),
   logoImage: getValueOrDefault(
-    `/ContactInfo/${localImages.ContactInfo.logoImage}`,
+    localImages?.ContactInfo?.logoImage ? `/ContactInfo/${localImages.ContactInfo.logoImage}` : undefined,
     "https://ik.imagekit.io/h7rza8886p/Default1.jpg?updatedAt=1757319001930",
   ),
   favicon: getValueOrDefault((localImages.ContactInfo as any)?.favicon ? `/ContactInfo/${(localImages.ContactInfo as any).favicon}` : undefined, "DEFAULT: /favicon.ico"),
@@ -602,7 +602,7 @@ const aboutContent: any = {
     "DEFAULT: Your Trusted Partner for Water Damage Restoration Solutions",
   ),
   bannerImage: getValueOrDefault(
-    `/about/${localImages.about.bannerImage}`,
+    localImages?.about?.bannerImage ? `/about/${localImages.about.bannerImage}` : undefined,
     "https://ik.imagekit.io/h7rza8886p/Default1.jpg?updatedAt=1757319001930",
   ),
   h1Banner: getValueOrDefault(
@@ -618,7 +618,7 @@ const aboutContent: any = {
     "DEFAULT: We provide professional water damage restoration in [location] for homeowners, businesses, and property managers. Whether you're dealing with flood damage, burst pipes, storm damage, or sewage backups, our certified technicians are ready to provide fast, effective restoration services. From water extraction and structural drying to mold remediation and full reconstruction, we handle every aspect of water damage recovery. With 24/7 emergency response, advanced equipment, and direct insurance billing, our service is trusted by customers who need fast and reliable solutions for water damage emergencies.",
   ),
   h2Image: getValueOrDefault(
-    `/about/${localImages.about.h2Image}`,
+    localImages?.about?.h2Image ? `/about/${localImages.about.h2Image}` : undefined,
     "https://ik.imagekit.io/h7rza8886p/Default1.jpg?updatedAt=1757319001930",
   ),
   missionSection: ensureMissionSection(missionSection),
@@ -687,7 +687,7 @@ const contactPageContent: any = {
     "DEFAULT: Emergency Water Damage? Contact Us Now!",
   ),
   bannerImage: getValueOrDefault(
-    `/contact/${localImages.contact.bannerImage}`,
+    localImages?.contact?.bannerImage ? `/contact/${localImages.contact.bannerImage}` : undefined,
     "https://ik.imagekit.io/h7rza8886p/Default1.jpg?updatedAt=1757319001930",
   ),
   h1Banner: getValueOrDefault(
@@ -700,7 +700,7 @@ const contactPageContent: any = {
   ),
   h2: getValueOrDefault(h2, "DEFAULT: Get Your Free Water Damage Assessment"),
   h2Image: getValueOrDefault(
-    `/contact/${localImages.contact.h2Image}`,
+    localImages?.contact?.h2Image ? `/contact/${localImages.contact.h2Image}` : undefined,
     "https://ik.imagekit.io/h7rza8886p/Default1.jpg?updatedAt=1757319001930",
   ),
   p2: getValueOrDefault(
@@ -713,7 +713,7 @@ const contactPageContent: any = {
     "DEFAULT: 24/7 emergency response, certified technicians, and direct insurance billing make us the top choice for water damage restoration in [location]. Call [phone] to get immediate help.",
   ),
   h3Image: getValueOrDefault(
-    h3Image,
+    localImages?.contact?.h3Image ? `/contact/${localImages.contact.h3Image}` : undefined,
     "https://ik.imagekit.io/h7rza8886p/Default1.jpg?updatedAt=1757319001930",
   ),
   ctaText: getValueOrDefault(
@@ -864,7 +864,7 @@ const homePageContent: any = {
     "DEFAULT: Fast, Professional, Reliable",
   ),
   bannerImage: getValueOrDefault(
-    `/home/${localImages.home.bannerImage}`,
+    localImages?.home?.bannerImage ? `/home/${localImages.home.bannerImage}` : undefined,
     "https://ik.imagekit.io/h7rza8886p/Default1.jpg?updatedAt=1757319001930",
   ),
   h1Banner: getValueOrDefault(
@@ -884,7 +884,7 @@ const homePageContent: any = {
     "DEFAULT: We provide the fastest, most reliable water damage restoration service in [location] with certified technicians and comprehensive restoration solutions.",
   ),
   h2Image: getValueOrDefault(
-    `/home/${localImages.home.h2Image}`,
+    localImages?.home?.h2Image ? `/home/${localImages.home.h2Image}` : undefined,
     "https://ik.imagekit.io/h7rza8886p/Default1.jpg?updatedAt=1757319001930",
   ),
   h3: getValueOrDefault(
@@ -896,7 +896,7 @@ const homePageContent: any = {
     "DEFAULT: From flood damage to burst pipes, we have the expertise and equipment to restore your property quickly and efficiently in [location].",
   ),
   h3Image: getValueOrDefault(
-    `/home/${localImages.home.h3Image}`,
+    localImages?.home?.h3Image ? `/home/${localImages.home.h3Image}` : undefined,
     "https://ik.imagekit.io/h7rza8886p/Default1.jpg?updatedAt=1757319001930",
   ),
   mapLink: getValueOrDefault(
@@ -1123,7 +1123,7 @@ const locationPageContent: any = {
     "DEFAULT: Serving [location] and Surrounding Areas",
   ),
   bannerImage: getValueOrDefault(
-    `/location/${localImages.location.bannerImage}`,
+    localImages?.location?.bannerImage ? `/location/${localImages.location.bannerImage}` : undefined,
     "https://ik.imagekit.io/h7rza8886p/Default1.jpg?updatedAt=1757319001930",
   ),
   h1Banner: getValueOrDefault(
@@ -1205,7 +1205,7 @@ const brandsContent: any = {
     "DEFAULT: Learn about our trusted water damage restoration partners and equipment. We use only the highest quality restoration equipment for reliable service in [location].",
   ),
   bannerImage: getValueOrDefault(
-     `/ourBrand/${localImages.ourBrand.bannerImage}`,
+    localImages?.ourBrand?.bannerImage ? `/ourBrand/${localImages.ourBrand.bannerImage}` : undefined,
     "https://ik.imagekit.io/h7rza8886p/Default1.jpg?updatedAt=1757319001930",
   ),
   h1Banner: getValueOrDefault(
@@ -1218,7 +1218,7 @@ const brandsContent: any = {
     "DEFAULT: We partner with the most reliable suppliers in the industry to ensure you get quality restoration equipment and professional service every time in [location].",
   ),
   h2Image: getValueOrDefault(
-    `/ourBrand/${localImages.ourBrand.h2Image}`,
+    localImages?.ourBrand?.h2Image ? `/ourBrand/${localImages.ourBrand.h2Image}` : undefined,
     "https://ik.imagekit.io/h7rza8886p/Default1.jpg?updatedAt=1757319001930",
   ),
   brandslist: (() => {
@@ -1332,7 +1332,7 @@ const servicePageContent: any = {
     "DEFAULT: Professional Water Damage Restoration Services",
   ),
   bannerImage: getValueOrDefault(
-    `/servicePage/${localImages.servicePage.bannerImage}`,
+    localImages?.servicePage?.bannerImage ? `/servicePage/${localImages.servicePage.bannerImage}` : undefined,
     "https://ik.imagekit.io/h7rza8886p/Default1.jpg?updatedAt=1757319001930",
   ),
   h1Banner: getValueOrDefault(
