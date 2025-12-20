@@ -53,7 +53,7 @@ export async function GET() {
   const ServiceURL = ServiceSlug.map(
     (slug) => `
   <url>
-    <loc>${origin}/service/${slug}</loc>
+    <loc>${origin}/services/${slug}</loc>
     <lastmod>${now}</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
