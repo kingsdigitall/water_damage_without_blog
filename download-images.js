@@ -283,13 +283,20 @@ async function downloadAllImages() {
     
   } catch (error) {
     console.error('❌ Error:', error.message);
-    process.exit(1);
+    throw error;
   }
 }
 
 // Run the script
 if (require.main === module) {
-  downloadAllImages();
+  downloadAllImages()
+    .then(() => {
+      process.exit(0);
+    })
+    .catch(err => {
+      console.error('Error:', err.message);
+      process.exit(1);
+    });
 }
 
 module.exports = { downloadAllImages, extractFilename, downloadImage, sanitizeFilename };

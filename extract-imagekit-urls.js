@@ -157,6 +157,7 @@ async function extractAllImagekitUrls() {
     await downloadAllImages();
   } catch (err) {
     console.error('Error downloading images:', err.message);
+    process.exit(1);
   }
   
   return output;
@@ -164,10 +165,14 @@ async function extractAllImagekitUrls() {
 
 // Run the script
 if (require.main === module) {
-  extractAllImagekitUrls().catch(err => {
-    console.error('Error:', err.message);
-    process.exit(1);
-  });
+  extractAllImagekitUrls()
+    .then(() => {
+      process.exit(0);
+    })
+    .catch(err => {
+      console.error('Error:', err.message);
+      process.exit(1);
+    });
 }
 
 module.exports = { extractAllImagekitUrls, processJsonFile };
